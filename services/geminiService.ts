@@ -1,11 +1,8 @@
 import { GoogleGenAI, Type } from "@google/genai";
 
-// Initialize the API client
-// Note: process.env.API_KEY is injected by the environment.
-// Robustly handle missing key by creating a dummy client or checking before call, 
-// but for this implementation we assume the key is present or we catch errors during the call.
 const getClient = () => {
-  const apiKey = process.env.API_KEY;
+  // Safe check for process.env which might not exist in some browser environments
+  const apiKey = typeof process !== 'undefined' ? process.env.API_KEY : null;
   if (!apiKey) return null;
   return new GoogleGenAI({ apiKey });
 };
@@ -13,7 +10,9 @@ const getClient = () => {
 export const suggestSubtasks = async (taskDescription: string): Promise<string[]> => {
   const client = getClient();
   if (!client) {
-    throw new Error("API Key not found");
+    // Return empty array instead of throwing to prevent app crash if AI fails
+    console.warn("Gemini API Key not found. AI features disabled.");
+    return [];
   }
 
   try {
@@ -36,7 +35,6 @@ export const suggestSubtasks = async (taskDescription: string): Promise<string[]
     const text = response.text;
     if (!text) return [];
     
-    // Parse the JSON response
     try {
         const subtasks = JSON.parse(text);
         if (Array.isArray(subtasks)) {
@@ -50,6 +48,6 @@ export const suggestSubtasks = async (taskDescription: string): Promise<string[]
 
   } catch (error) {
     console.error("Gemini API Error:", error);
-    throw error;
+    return []; // Graceful failure
   }
 };

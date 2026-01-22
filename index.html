@@ -68,5 +68,7 @@
   </head>
   <body class="antialiased min-h-screen relative selection:bg-pink-500/30">
     <div id="root"></div>
+    <!-- Explicitly import index.tsx for environments that don't auto-inject -->
+    <script type="module" src="./index.tsx"></script>
   </body>
 </html>
